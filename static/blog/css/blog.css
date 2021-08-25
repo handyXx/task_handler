@@ -1,0 +1,10 @@
+.deposit_border {
+    border-style: ridge;
+    padding: 5px;
+    border-width: 1px;
+    border-radius: 9px;
+}
+
+.deposit_url {
+    color: black;
+}

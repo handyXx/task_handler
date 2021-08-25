@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+djangorestframework = "*"
+django-silk = "*"
+black = "*"
+pillow = "*"
+isort = "*"
+django-crispy-forms = "*"
+django-jinja = "*"
+djangorestframework-simplejwt = "*"
+django-filter = "==2.4.0"
+faker = "*"
+drf-filtermapbackend = "*"
+xlwt = "*"
+aspose-cells = "*"
+jpype1 = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

@@ -85,6 +85,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
             context["deposit"] = Deposit.objects.create(
                 amount=0.00, user=self.request.user
             )
+
             context["elements"] = None
             context["categories"] = None
         return context

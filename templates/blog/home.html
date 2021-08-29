@@ -88,7 +88,7 @@
             {% for element in elements %}
             <tr>
                 <td><a href="{% url 'blog:edit-task' element.id %}">{{element.name}}</a></td>
-                <td>{{element.description}}</td>
+                <td>{{element.description|upper}}</td>
                 <td>{{element.created_at}}</td>
                 <td>{{element.price}}</td>
                 <td style="color: purple;">{{element.category.name}}</td>
@@ -99,7 +99,11 @@
             {% for element in elements %}
             <tr>
                 <td><a href="{% url 'blog:edit-task' element.id %}">{{element.name}}</a></td>
-                <td>{{element.description|upper}}</td>
+                {% if element.description|length > 100 %}
+                <td>{{element.description|lower|slice:":100"}}...</td>
+                {% else%}
+                <td>{{element.description|lower}}</td>
+                {% endif %}
                 <td>{{element.created_at}}</td>
                 <td>{{element.price}}</td>
                 <td><a href="{% url 'blog:category-elements' element.category.slug %}">{{element.category.name}}</a></td>

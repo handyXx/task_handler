@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 from .models import Category, Deposit, Task
 
@@ -41,6 +42,18 @@ class TaskForm(forms.ModelForm):
         model = Task
         fields = ("name", "description", "price", "category")
 
+    def clean_description(self):
+        data = self.cleaned_data["description"]
+        if len(data) <= 170:
+            raise ValidationError("Description field must have more than 170 char.")
+
+        return data
+
+    def clean(self):
+        cleaned_data = super(TaskForm, self).clean()
+        print(cleaned_data)
+        return cleaned_data
+
     def __init__(self, *args, **kwargs):
         self._user = kwargs.pop("user", None)
         self._prev_url = kwargs.pop("prev_url", None)
@@ -51,7 +64,6 @@ class TaskForm(forms.ModelForm):
             self.fields["category"].queryset = None
         else:
             if self._user:
-                # print(dir(self.fields["category"]))
                 self.fields["category"].queryset = Category.objects.filter(
                     user=self._user
                 )

@@ -24,16 +24,16 @@ class ExportExcel(View):
         prev_url = self.request.META.get("HTTP_REFERER")
         session_ids = self.request.session["query_ids"]
 
-        if session_ids:
-            return self.model.objects.filter(id__in=session_ids)
-
-        session_ids = None
-
         if "category" in prev_url:
             category_slug = prev_url.split("/")[-2]
             return self.model.objects.filter(
                 category__in=[Category.objects.get(slug=category_slug)]
             )
+
+        if session_ids:
+            return self.model.objects.filter(id__in=session_ids)
+        self.request.session["query_ids"] = None
+
         return self.model.objects.filter(user=self.request.user)
 
     def extract_excel(self):

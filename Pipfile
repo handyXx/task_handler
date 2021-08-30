@@ -19,6 +19,7 @@ drf-filtermapbackend = "*"
 xlwt = "*"
 aspose-cells = "*"
 jpype1 = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 

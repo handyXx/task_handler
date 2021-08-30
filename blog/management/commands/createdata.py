@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Start insering data  in category model"))
         for _ in range(qs_category_num + 1, qs_category_num + 16):
-            uid = random.randint(1, 7)
+            uid = random.randint(1, 4)
             user_inst = User.objects.get(id=uid)
             name = fake.text(max_nb_chars=30)
             Category.objects.create(name=name, user=user_inst)
@@ -32,7 +32,7 @@ class Command(BaseCommand):
         for _ in range(20):
             name = fake.text(max_nb_chars=30)
             desc = fake.text(max_nb_chars=270)
-            uid = random.randint(1, 7)
+            uid = random.randint(1, 4)
             user_inst = User.objects.get(id=uid)
             gid = random.randint(1, qs_category_num)
             g_inst = Category.objects.get(id=gid)

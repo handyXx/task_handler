@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from .models import Category, Deposit, Task
 
@@ -49,14 +49,22 @@ class TaskForm(forms.ModelForm):
 
         return data
 
-    def clean(self):
-        cleaned_data = super(TaskForm, self).clean()
-        print(cleaned_data)
-        return cleaned_data
+    def clean_price(self):
+        price_data = self.cleaned_data['price']
+        try:
+            user_deposit = Deposit.objects.get(user=self._user)
+            if float(price_data) > float(user_deposit.amount):
+                raise ValidationError("There is not enough money in your account")
+            if price_data <= 0:
+                raise ValidationError("price can not be negative")
+        except ObjectDoesNotExist:
+            raise ValidationError("There is no an amount in your deposit please go and add some!!")
+        return price_data
 
     def __init__(self, *args, **kwargs):
         self._user = kwargs.pop("user", None)
         self._prev_url = kwargs.pop("prev_url", None)
+        self._request = kwargs.pop("request", None)
         super().__init__(*args, **kwargs)
         if self._prev_url and "category" in self._prev_url:
             category_slug = self._prev_url.split("/")[-2]

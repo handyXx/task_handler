@@ -71,13 +71,13 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 # Database
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'handy_handler',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'POST': '',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "handy_handler",
+        "USER": "postgres",
+        "PASSWORD": "root",
+        "HOST": "localhost",
+        "POST": "",
     }
 }
 

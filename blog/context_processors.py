@@ -1,5 +1,6 @@
-from .models import Deposit
 from django.core.exceptions import ObjectDoesNotExist
+
+from .models import Deposit
 
 
 def deposit(request):

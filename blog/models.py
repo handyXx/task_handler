@@ -6,9 +6,10 @@ from django.utils.translation import gettext_lazy as _
 
 from helpers.random_name_generator import RandomFileName
 
-# class CategoryCustomManger(models.Manager):
-#     def get_queryset(self):
-#         return super().get_queryset().filter(user=settings.AUTH_USER_MODEL)
+
+class TaskCustomManger(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(price_added=True)
 
 
 class Category(models.Model):
@@ -44,7 +45,7 @@ class Task(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     picture = models.ImageField(upload_to=RandomFileName("items_blog"), default=None)
 
-    objects = models.Manager()
+    objects = TaskCustomManger()
 
     class Meta:
         ordering = ["-created_at"]

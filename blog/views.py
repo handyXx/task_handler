@@ -1,4 +1,5 @@
 import uuid
+import csv
 
 import xlwt
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,8 +8,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import FormView, ListView, TemplateView, View
+from silk.profiling.profiler import silk_profile
 
 from blog.models import *
+from .utils import export_csv
 
 from .forms import CategoryForm, DepositForm, TaskForm
 
@@ -21,11 +24,18 @@ class ExportExcel(View):
 
     def get_queryset(self):
         prev_url = self.request.META.get("HTTP_REFERER")
+        session_ids = self.request.session["query_ids"]
+
         if "category" in prev_url:
             category_slug = prev_url.split("/")[-2]
             return self.model.objects.filter(
                 category__in=[Category.objects.get(slug=category_slug)]
             )
+
+        if session_ids:
+            return self.model.objects.filter(id__in=session_ids)
+        self.request.session["query_ids"] = None
+
         return self.model.objects.filter(user=self.request.user)
 
     def extract_excel(self):
@@ -66,29 +76,37 @@ class ExportExcel(View):
         return response
 
 
-class IndexView(LoginRequiredMixin, TemplateView):
+class IndexView(LoginRequiredMixin, ListView):
     template_name = "blog/home.html"
     model = Task
+    paginate_by = 7
+    context_object_name = "elements"
 
+    @silk_profile(name="View Index Page")
     def get(self, request, *args, **kwargs):
         self.check_deposit(request)
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         try:
             context["deposit"] = Deposit.objects.get(user=self.request.user)
-            context["elements"] = Task.objects.filter(user=self.request.user)
             context["categories"] = Category.objects.filter(user=self.request.user)
+
+            # save the elements ids in request session to be used in excel extraction
+            self.request.session["query_ids"] = list(
+                context["elements"].values_list("id", flat=True)
+            )
         except ObjectDoesNotExist as e:
             context["deposit"] = Deposit.objects.create(
                 amount=0.00, user=self.request.user
             )
-
             context["elements"] = None
             context["categories"] = None
         return context
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
 
     def check_deposit(self, request):
         user_elements = self.model.objects.filter(user=request.user)
@@ -110,9 +128,6 @@ class DepositView(LoginRequiredMixin, FormView):
     form_class = DepositForm
     template_name = "blog/deposit.html"
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
     def form_valid(self, form):
         form.save()
         return redirect("blog:home")
@@ -127,6 +142,7 @@ class CategoryElementsListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = "blog/home.html"
     context_object_name = "elements"
+    paginate_by = 4
 
     def get_queryset(self):
         return self.model.objects.filter(
@@ -187,3 +203,25 @@ class TaskEditView(LoginRequiredMixin, FormView):
         # save task instance
         form.save()
         return HttpResponseRedirect(self.success_url)
+
+
+def csv_export(request):
+    prev_url = request.META.get("HTTP_REFERER")
+    session_ids = request.session.get("query_ids")
+    queryset = None
+
+    if session_ids:
+        queryset = Task.objects.filter(id__in=session_ids)
+        request.session['query_ids'] = None
+
+    if 'category' in prev_url:
+        print(prev_url)
+        category_slug = prev_url.split("/")[-2]
+        queryset = Task.objects.filter(
+            category__in=[Category.objects.get(slug=category_slug)]
+        )
+
+    data = export_csv(request, queryset=queryset)
+    response = HttpResponse(data, content_type='text/csv')
+
+    return response

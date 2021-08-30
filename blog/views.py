@@ -1,4 +1,5 @@
 import uuid
+import csv
 
 import xlwt
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,6 +11,7 @@ from django.views.generic import FormView, ListView, TemplateView, View
 from silk.profiling.profiler import silk_profile
 
 from blog.models import *
+from .utils import export_csv
 
 from .forms import CategoryForm, DepositForm, TaskForm
 
@@ -201,3 +203,25 @@ class TaskEditView(LoginRequiredMixin, FormView):
         # save task instance
         form.save()
         return HttpResponseRedirect(self.success_url)
+
+
+def csv_export(request):
+    prev_url = request.META.get("HTTP_REFERER")
+    session_ids = request.session.get("query_ids")
+    queryset = None
+
+    if session_ids:
+        queryset = Task.objects.filter(id__in=session_ids)
+        request.session['query_ids'] = None
+
+    if 'category' in prev_url:
+        print(prev_url)
+        category_slug = prev_url.split("/")[-2]
+        queryset = Task.objects.filter(
+            category__in=[Category.objects.get(slug=category_slug)]
+        )
+
+    data = export_csv(request, queryset=queryset)
+    response = HttpResponse(data, content_type='text/csv')
+
+    return response

@@ -16,4 +16,5 @@ urlpatterns = [
     path("add-element", views.TaskCreationView.as_view(), name="add-task"),
     path("edit-element/<int:id>/", views.TaskEditView.as_view(), name="edit-task"),
     path("export_excel/", views.ExportExcel.as_view(), name="export-excel"),
+    path("export_csv/", views.csv_export, name="export-csv"),
 ]
